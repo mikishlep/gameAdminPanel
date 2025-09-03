@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { auth } from "@/api";
 import { register, type RegisterFormData} from "@/api/auth.ts";
 
-async function handleSubmit(formData: RegisterFormData) {
+async function handleSubmit(formData: RegisterFormData): Promise<void> {
   try {
-    const response = await register(formData);
+    const res = await register(formData);
 
-    if (response.success) {
+    if (res.success) {
       console.log("Регистрация успешна!");
     } else {
-      console.log("Ошибка регистрации:", response.message);
+      console.log("Ошибка регистрации:", res.message);
     }
-  } catch (error) {
-    console.error("Ошибка запроса: ", error);
+  } catch (e) {
+    console.error("Ошибка запроса: ", e);
   }
 }
 
