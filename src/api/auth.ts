@@ -8,14 +8,28 @@ export interface RegisterFormData {
     lastName: string;
 }
 
-export interface RegisterResponse {
+export interface LoginFormData {
+    userName: string;
+    passUser: string;
+}
+
+export interface AuthResponse {
     success: boolean;
     message?: string;
 }
 
-export async function register(formData: RegisterFormData): Promise<RegisterResponse> {
-    return api.post<RegisterResponse>("/auth/register", formData, {
+// --------------------------------
+
+export async function register(formData: RegisterFormData): Promise<AuthResponse> {
+    return api.post<AuthResponse>("/auth/register", formData, {
         params: { oauth_client: "my-admin_panel" },
         headers: { "Content-Type": "application/json" },
     });
+}
+
+export async function login(formData: LoginFormData): Promise<AuthResponse> {
+    return api.post<AuthResponse>("/auth/login", formData, {
+        params: { oauth_client: "my-admin_panel" },
+        headers: { "Content-Type": "application/json" },
+    })
 }

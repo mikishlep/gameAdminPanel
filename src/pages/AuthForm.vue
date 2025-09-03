@@ -28,9 +28,22 @@ handleSubmit(formData);
 </script>
 
 <template>
+  <div class="wrapper">
+    <div class="registration-panel">
 
+    </div>
+  </div>
 </template>
 
 <style scoped>
+.wrapper {
+  width: 100vw;
+  height: 100vh;
+}
 
+.registration-panel {
+  width: 300px;
+  height: 200px;
+  background-color: red;
+}
 </style>
