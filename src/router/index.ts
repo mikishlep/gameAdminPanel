@@ -4,17 +4,20 @@ import type { RouteRecordRaw } from "vue-router";
 import AuthForm from "../pages/AuthForm.vue";
 import Dashboard from "../pages/Dashboard.vue";
 import Users from "../pages/Users.vue";
+import Promocodes from "../pages/Promocodes.vue";
 
 export const RouteNames = {
     Auth: "Auth",
     Dashboard: "Dashboard",
     Users: "Users",
+    Promocodes: "Promocodes",
 } as const;
 
 const routes: RouteRecordRaw[] = [
     { path: "/auth", name: RouteNames.Auth, component: AuthForm },
     { path: "/", name: RouteNames.Dashboard, component: Dashboard },
     { path: "/users", name: RouteNames.Users, component: Users },
+    { path: "/promocodes", name: RouteNames.Promocodes, component: Promocodes },
 ];
 
 const router = createRouter({
