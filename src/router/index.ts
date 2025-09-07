@@ -29,7 +29,7 @@ const router = createRouter({
 // не дает без логина пройти дальше
 router.beforeEach((to, _from, next) => {
     const userStore = useUserStore();
-    userStore.restoreSession(); // восстанавливаем всегда
+    userStore.restoreSession();
 
     if (!userStore.isLoggedIn && to.name !== RouteNames.Auth) {
         return next({ name: RouteNames.Auth });

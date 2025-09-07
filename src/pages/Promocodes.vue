@@ -27,11 +27,10 @@ async function fetchPromocodes() {
   loading.value = true;
   try {
     const userId = Number(localStorage.getItem("userId"));
-    const adminUserId = Number(localStorage.getItem("userId")); // или другой admin_id
+    const adminUserId = Number(localStorage.getItem("userId"));
 
     const allPromocodes = await getPromocodesByUser(userId, adminUserId);
 
-    // пагинация на клиенте (если API не поддерживает)
     totalItems.value = allPromocodes.length;
     const start = (page.value - 1) * itemsPerPage.value;
     const end = start + itemsPerPage.value;
