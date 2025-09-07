@@ -12,31 +12,30 @@ const page = ref(1);
 const itemsPerPage = ref(10);
 const totalItems = ref(0);
 
-const promoModal = ref(false);          // контролирует открытие модалки
+const promoModal = ref(false);
 const selectedUser = ref<User | null>(null);
 const userPromos = ref<Promocode[]>([]);
 const loadingPromos = ref(false);
 
 const headers = ref([
-    { title: 'ID', value: 'idUser' },
-    { title: 'Юзернейм', value: 'user' },
-    { title: 'Имя', value: 'firstName' },
-    { title: 'Фамилия', value: 'lastName' },
-    { title: 'Email', value: 'email' },
-    { title: 'Действия', value: 'action', sortable: false },
+  { title: 'ID', value: 'idUser' },
+  { title: 'Юзернейм', value: 'user' },
+  { title: 'Имя', value: 'firstName' },
+  { title: 'Фамилия', value: 'lastName' },
+  { title: 'Email', value: 'email' },
+  { title: 'Действия', value: 'action', sortable: false, align: 'end' },
 ]);
 
 const promoHeaders = [
-    { title: 'ID', value: 'id' },
-    { title: 'Название', value: 'name' },
-    { title: 'Значение', value: 'description' },
-    { title: 'Тип', value: 'promoCount' },
-    { title: 'Статус', value: 'status' },
-    { title: 'Токен', value: 'tokenHash' },
-    { title: 'Создано', value: 'createdAt' },
+  { title: 'ID', value: 'id' },
+  { title: 'Название', value: 'name' },
+  { title: 'Значение', value: 'description' },
+  { title: 'Тип', value: 'promoCount' },
+  { title: 'Статус', value: 'status' },
+  { title: 'Токен', value: 'tokenHash' },
+  { title: 'Создано', value: 'createdAt' },
 ];
 
-// Получаем список пользователей
 async function fetchUsers() {
   loading.value = true;
   try {
@@ -55,7 +54,6 @@ async function fetchUsers() {
   }
 }
 
-// Открываем модалку с промокодами пользователя
 async function openPromosModal(user: User) {
   selectedUser.value = user;
   promoModal.value = true;
@@ -104,15 +102,15 @@ fetchUsers();
         class="elevation-1"
         :loading="loading"
     >
-      <!-- Кнопка открытия модалки -->
       <template v-slot:item.action="{ item }">
-        <v-btn small color="primary" @click="openPromosModal(item)">
-          Просмотреть промокоды
-        </v-btn>
+        <div class="action-cell">
+          <v-btn small text color="primary" @click="openPromosModal(item)">
+            Просмотр
+          </v-btn>
+        </div>
       </template>
     </v-data-table>
 
-    <!-- Модалка с промокодами -->
     <v-dialog v-model="promoModal" max-width="800px">
       <v-card>
         <v-card-title>
@@ -145,4 +143,8 @@ fetchUsers();
 </template>
 
 <style scoped>
+.action-cell {
+  display: flex;
+  justify-content: flex-end;
+}
 </style>
