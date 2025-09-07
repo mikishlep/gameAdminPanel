@@ -40,6 +40,7 @@ const promoHeaders = [
   { title: 'Статус', value: 'status' },
   { title: 'Токен', value: 'tokenHash' },
   { title: 'Создано', value: 'createdAt' },
+  { title: 'Действия', value: 'action', sortable: false, align: 'end' },
 ];
 
 async function fetchUsers() {
@@ -78,31 +79,23 @@ async function openPromosModal(user: User) {
   }
 }
 
-async function handleUsePromocode() {
-  if (!promocodeToken.value.trim()) {
-    promocodeError.value = 'Введите токен промокода';
-    return;
-  }
-
-  if (!selectedUser.value) return;
-
+async function handleUsePromocode(promo: Promocode) {
   usingPromocode.value = true;
   promocodeError.value = '';
   promocodeSuccess.value = '';
 
   try {
     const useData: UsePromocodeData = {
-      token: promocodeToken.value.trim(),
-      user_id: selectedUser.value.idUser,
+      token: promo.tokenHash,
+      user_id: selectedUser.value?.idUser,
       user_admin_id: 18
     };
 
     const result = await usePromocode(useData);
     promocodeSuccess.value = `Промокод успешно использован: ${result.name} (${result.description})`;
-    promocodeToken.value = '';
     
     // Refresh promocodes list
-    const promos = await getPromocodesByUser(selectedUser.value.idUser, 18);
+    const promos = await getPromocodesByUser(selectedUser.value?.idUser, 18);
     userPromos.value = promos;
   } catch (e) {
     console.error(e);
@@ -155,7 +148,7 @@ fetchUsers();
       </template>
     </v-data-table>
 
-    <v-dialog v-model="promoModal" max-width="800px">
+    <v-dialog v-model="promoModal" max-width="1200px">
       <v-card>
         <v-card-title>
           Промокоды пользователя: {{ selectedUser?.user }}
@@ -163,39 +156,41 @@ fetchUsers();
         <v-divider></v-divider>
         <v-card-text>
           <div v-if="loadingPromos">Загрузка промокодов...</div>
-          <v-data-table
-              v-else
-              :headers="promoHeaders"
-              :items="userPromos"
-              dense
-              hide-default-footer
-          >
-            <template v-slot:item.promoCount="{ item }">
-              <span>
-                {{ item.promoCount === 1 ? 'Рублей' : item.promoCount === 0 ? 'Процентов' : item.promoCount }}
-              </span>
-            </template>
-          </v-data-table>
-          <v-text-field
-              v-model="promocodeToken"
-              label="Введите токен промокода"
-              :error-messages="promocodeError"
-              :success-messages="promocodeSuccess"
-              :loading="usingPromocode"
-              density="compact"
-              variant="solo-filled"
-              flat
-              hide-details
-              single-line
-          />
-          <v-btn
-              color="primary"
-              @click="handleUsePromocode"
-              :loading="usingPromocode"
-              :disabled="usingPromocode"
-          >
-            Использовать промокод
-          </v-btn>
+          <div v-else>
+            <v-data-table
+                :headers="promoHeaders"
+                :items="userPromos"
+                dense
+                hide-default-footer
+            >
+              <template v-slot:item.promoCount="{ item }">
+                <span>
+                  {{ item.promoCount === 1 ? 'Рублей' : item.promoCount === 0 ? 'Процентов' : item.promoCount }}
+                </span>
+              </template>
+              <template v-slot:item.action="{ item }">
+                <div class="action-cell">
+                  <v-btn 
+                    small 
+                    text 
+                    color="primary" 
+                    @click="handleUsePromocode(item)"
+                    :loading="usingPromocode"
+                    :disabled="usingPromocode"
+                  >
+                    Применить
+                  </v-btn>
+                </div>
+              </template>
+            </v-data-table>
+            
+            <div v-if="promocodeError" class="text-error mt-3">
+              {{ promocodeError }}
+            </div>
+            <div v-if="promocodeSuccess" class="text-success mt-3">
+              {{ promocodeSuccess }}
+            </div>
+          </div>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
