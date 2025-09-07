@@ -130,7 +130,7 @@ fetchUsers();
           >
             <template v-slot:item.promoCount="{ item }">
               <span>
-                {{ item.promoCount === 1 ? 'Проценты' : item.promoCount === 0 ? 'Сумма' : item.promoCount }}
+                {{ item.promoCount === 1 ? 'Рублей' : item.promoCount === 0 ? 'Процентов' : item.promoCount }}
               </span>
             </template>
           </v-data-table>
