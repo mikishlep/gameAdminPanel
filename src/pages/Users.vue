@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
 import { getUsers, type UsersFormData, type User, type UsersResponse } from "@/api/users.ts";
-import { getPromocodesByUser, type Promocode } from "@/api/promocodes.ts";
+import { getPromocodesByUser, usePromocode, type Promocode, type UsePromocodeData } from "@/api/promocodes.ts";
 
 const search = ref('');
 const users = ref<User[]>([]);
@@ -16,6 +16,12 @@ const promoModal = ref(false);
 const selectedUser = ref<User | null>(null);
 const userPromos = ref<Promocode[]>([]);
 const loadingPromos = ref(false);
+
+// Promocode usage functionality
+const promocodeToken = ref('');
+const usingPromocode = ref(false);
+const promocodeError = ref('');
+const promocodeSuccess = ref('');
 
 const headers = ref([
   { title: 'ID', value: 'idUser' },
@@ -58,6 +64,10 @@ async function openPromosModal(user: User) {
   selectedUser.value = user;
   promoModal.value = true;
   loadingPromos.value = true;
+  // Reset promocode form
+  promocodeToken.value = '';
+  promocodeError.value = '';
+  promocodeSuccess.value = '';
   try {
     const promos = await getPromocodesByUser(user.idUser, 18);
     userPromos.value = promos;
@@ -65,6 +75,40 @@ async function openPromosModal(user: User) {
     console.error(e);
   } finally {
     loadingPromos.value = false;
+  }
+}
+
+async function handleUsePromocode() {
+  if (!promocodeToken.value.trim()) {
+    promocodeError.value = 'Введите токен промокода';
+    return;
+  }
+
+  if (!selectedUser.value) return;
+
+  usingPromocode.value = true;
+  promocodeError.value = '';
+  promocodeSuccess.value = '';
+
+  try {
+    const useData: UsePromocodeData = {
+      token: promocodeToken.value.trim(),
+      user_id: selectedUser.value.idUser,
+      user_admin_id: 18
+    };
+
+    const result = await usePromocode(useData);
+    promocodeSuccess.value = `Промокод успешно использован: ${result.name} (${result.description})`;
+    promocodeToken.value = '';
+    
+    // Refresh promocodes list
+    const promos = await getPromocodesByUser(selectedUser.value.idUser, 18);
+    userPromos.value = promos;
+  } catch (e) {
+    console.error(e);
+    promocodeError.value = 'Ошибка при использовании промокода. Проверьте токен и попробуйте снова.';
+  } finally {
+    usingPromocode.value = false;
   }
 }
 
@@ -132,6 +176,26 @@ fetchUsers();
               </span>
             </template>
           </v-data-table>
+          <v-text-field
+              v-model="promocodeToken"
+              label="Введите токен промокода"
+              :error-messages="promocodeError"
+              :success-messages="promocodeSuccess"
+              :loading="usingPromocode"
+              density="compact"
+              variant="solo-filled"
+              flat
+              hide-details
+              single-line
+          />
+          <v-btn
+              color="primary"
+              @click="handleUsePromocode"
+              :loading="usingPromocode"
+              :disabled="usingPromocode"
+          >
+            Использовать промокод
+          </v-btn>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
