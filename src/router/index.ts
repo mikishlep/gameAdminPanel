@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import type { RouteRecordRaw } from "vue-router";
+import { useUserStore } from "@/stores/user.ts";
 
 import AuthForm from "../pages/AuthForm.vue";
 import Dashboard from "../pages/Dashboard.vue";
@@ -23,6 +24,22 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
     history: createWebHistory(),
     routes
+});
+
+// не дает без логина пройти дальше
+router.beforeEach((to, _from, next) => {
+    const userStore = useUserStore();
+    userStore.restoreSession(); // восстанавливаем всегда
+
+    if (!userStore.isLoggedIn && to.name !== RouteNames.Auth) {
+        return next({ name: RouteNames.Auth });
+    }
+
+    if (userStore.isLoggedIn && to.name === RouteNames.Auth) {
+        return next({ name: RouteNames.Dashboard });
+    }
+
+    next();
 });
 
 export default router;

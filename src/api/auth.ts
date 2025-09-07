@@ -35,17 +35,15 @@ export interface AuthResponse {
 // --------------------------------
 
 export async function register(formData: RegisterFormData): Promise<AuthResponse> {
-    const res = await api.post<AuthResponse>("/auth/register", formData, {
+    return api.post<AuthResponse>("/auth/register", formData, {
         params: { oauth_client: "my-admin_panel" },
         headers: { "Content-Type": "application/json" },
     });
-    return res.data;
 }
 
 export async function login(formData: LoginFormData): Promise<AuthResponse> {
-    const res = await api.post<AuthResponse>("/auth/login", formData, {
+    return api.post<AuthResponse>("/auth/login", formData, {
         params: { oauth_client: "my-admin_panel" },
         headers: { "Content-Type": "application/json" },
     });
-    return res.data;
 }

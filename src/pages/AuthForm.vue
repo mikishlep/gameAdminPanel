@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { ref, reactive } from "vue";
-import { register, type RegisterFormData} from "@/api/auth.ts";
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
+import { login, type LoginFormData} from "@/api/auth.ts";
 import { useUserStore } from "@/stores/user.ts";
+import { RouteNames } from "@/router/index.ts";
 
 const userStore = useUserStore();
+const router = useRouter();
 
-const formData = reactive<RegisterFormData>({
+const formData = reactive<LoginFormData>({
   userName: "",
   passUser: "",
-  email: "",
-  firstName: "",
-  lastName: "",
 });
 
 async function handleSubmit() {
   try {
-    const res = await register(formData);
+    const res = await login(formData);
 
     if (res.userData && res.tokenUser) {
       console.log("Сохраняем токен и userId:", res.tokenUser.access_token, res.userData.idUser);
@@ -27,7 +27,8 @@ async function handleSubmit() {
           String(res.userData.idUser)
       );
 
-      console.log("Регистрация успешна!");
+      console.log("Вход успешен!");
+      await router.push({ name: RouteNames.Dashboard });
     } else {
       console.log("Ошибка: неожиданный ответ от сервера", res);
     }
@@ -42,11 +43,8 @@ async function handleSubmit() {
     <v-card width="400">
       <v-card-title class="text-h6">Вход в админку</v-card-title>
       <v-card-text>
-        <v-text-field v-model="formData.userName" label="Имя пользователя" outlined dense />
+        <v-text-field v-model="formData.userName" label="Логин" outlined dense />
         <v-text-field v-model="formData.passUser" label="Пароль" type="password" outlined dense />
-        <v-text-field v-model="formData.firstName" label="Имя" outlined dense />
-        <v-text-field v-model="formData.lastName" label="Фамилия" outlined dense />
-        <v-text-field v-model="formData.email" label="Почта" outlined dense />
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>

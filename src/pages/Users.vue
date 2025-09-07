@@ -1,61 +1,54 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
-import { getUsers, type UsersFormData } from "@/api/users.ts";
-
-interface User {
-  idUser: number;
-  user: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-}
+import { getUsers, type UsersFormData, type User, type UsersResponse } from "@/api/users.ts";
 
 const search = ref('');
 const users = ref<User[]>([]);
 const loading = ref(false);
 
+const page = ref(1);
+const itemsPerPage = ref(10);
+const totalItems = ref(0);
+
+// заголовки таблицы должны совпадать с ключами данных
 const headers = ref([
-    { title: 'ID', key: 'id' },
-    { title: 'Юзернейм', key: 'username' },
-    { title: 'Имя', key: 'firstName' },
-    { title: 'Фамилия', key: 'lastName' },
-    { title: 'Email', key: 'email' },
+  { title: 'ID', key: 'idUser' },
+  { title: 'Юзернейм', key: 'user' },
+  { title: 'Имя', key: 'firstName' },
+  { title: 'Фамилия', key: 'lastName' },
+  { title: 'Email', key: 'email' },
 ]);
 
-onMounted(async () => {
+async function fetchUsers() {
   loading.value = true;
-
   try {
     const formData: UsersFormData = {
-      id_user: localStorage.getItem("userId"),
-      offset: 0,
-      limit: 10,
-    }
+      id_user: Number(localStorage.getItem("userId")),
+      offset: (page.value - 1) * itemsPerPage.value,
+      limit: itemsPerPage.value,
+    };
 
-    const res = await getUsers(formData);
-
-    if (res.success && Array.isArray((res as any).data)) {
-      users.value = (res as any).data;
-    } else {
-      console.warn("Ошибка при получении пользователей:", res.message);
-    }
+    const res: UsersResponse = await getUsers(formData);
+    users.value = res.users;
+    totalItems.value = res.total;
   } catch (e) {
-    console.log(`Ошибка при получении пользователей: ${e}`);
+    console.error("Ошибка при получении пользователей:", e);
   } finally {
     loading.value = false;
   }
-});
+}
+
+onMounted(fetchUsers);
+
+watch([page, itemsPerPage], fetchUsers);
 </script>
 
 <template>
   <v-card flat>
     <v-card-title class="d-flex align-center pe-2">
-      <v-icon :icon="mdiAccountGroup"></v-icon> &nbsp;
-      Пользователи
-
+      <v-icon :icon="mdiAccountGroup"></v-icon> &nbsp; Пользователи
       <v-spacer></v-spacer>
-
       <v-text-field
           v-model="search"
           density="compact"
@@ -75,8 +68,12 @@ onMounted(async () => {
         :headers="headers"
         :items="users"
         :search="search"
-        item-value="id"
+        :items-per-page="itemsPerPage"
+        :page.sync="page"
+        :server-items-length="totalItems"
+        item-value="idUser"
         class="elevation-1"
+        :loading="loading"
     />
   </v-card>
 </template>

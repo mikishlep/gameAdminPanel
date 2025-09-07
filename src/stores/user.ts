@@ -29,6 +29,7 @@ export const useUserStore = defineStore("user", {
 
             localStorage.setItem("access_token", token);
             localStorage.setItem("userId", userId);
+            localStorage.setItem("isLoggedIn", "true");
         },
         logout() {
             this.userName = null;
@@ -40,14 +41,19 @@ export const useUserStore = defineStore("user", {
 
             localStorage.removeItem("access_token");
             localStorage.removeItem("userId");
+            localStorage.removeItem("isLoggedIn");
         },
         restoreSession() {
             const token = localStorage.getItem("access_token");
             const userId = localStorage.getItem("userId");
-            if (token && userId) {
+            const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+            if (token && userId && loggedIn) {
                 this.accessToken = token;
                 this.userId = userId;
                 this.isLoggedIn = true;
+            } else {
+                this.isLoggedIn = false;
             }
         },
     },
