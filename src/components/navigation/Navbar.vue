@@ -16,7 +16,6 @@ const drawer = ref(true);
       <v-list>
         <v-list-item to="/" title="Статистика" :prepend-icon="mdiViewDashboard" />
         <v-list-item to="/users" title="Пользователи" :prepend-icon="mdiAccountGroup" />
-        <v-list-item to="/promocodes" title="Промокоды" :prepend-icon="mdiTicketPercent" />
       </v-list>
     </v-navigation-drawer>
 
