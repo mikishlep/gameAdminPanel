@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { mdiAccountGroup, mdiMagnify, mdiChevronDown, mdiChevronUp } from "@mdi/js";
+import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
 import { getUsers, type UsersFormData, type User, type UsersResponse } from "@/api/users.ts";
 import { getPromocodesByUser, type Promocode } from "@/api/promocodes.ts";
 
@@ -12,28 +12,31 @@ const page = ref(1);
 const itemsPerPage = ref(10);
 const totalItems = ref(0);
 
-const expanded = ref<number[]>([]);
-const promosMap = ref<Record<number, Promocode[]>>({});
-const loadingPromos = ref<Record<number, boolean>>({});
+const promoModal = ref(false);          // контролирует открытие модалки
+const selectedUser = ref<User | null>(null);
+const userPromos = ref<Promocode[]>([]);
+const loadingPromos = ref(false);
 
 const headers = ref([
-  { title: 'ID', key: 'idUser' },
-  { title: 'Юзернейм', key: 'user' },
-  { title: 'Имя', key: 'firstName' },
-  { title: 'Фамилия', key: 'lastName' },
-  { title: 'Email', key: 'email' },
+    { title: 'ID', value: 'idUser' },
+    { title: 'Юзернейм', value: 'user' },
+    { title: 'Имя', value: 'firstName' },
+    { title: 'Фамилия', value: 'lastName' },
+    { title: 'Email', value: 'email' },
+    { title: 'Действия', value: 'action', sortable: false },
 ]);
 
 const promoHeaders = [
-  { text: 'ID', value: 'id' },
-  { text: 'Название', value: 'name' },
-  { text: 'Описание', value: 'description' },
-  { text: 'Кол-во', value: 'promoCount' },
-  { text: 'Статус', value: 'status' },
-  { text: 'Токен', value: 'tokenHash' },
-  { text: 'Создано', value: 'createdAt' },
+    { title: 'ID', value: 'id' },
+    { title: 'Название', value: 'name' },
+    { title: 'Описание', value: 'description' },
+    { title: 'Тип', value: 'promoCount' },
+    { title: 'Статус', value: 'status' },
+    { title: 'Токен', value: 'tokenHash' },
+    { title: 'Создано', value: 'createdAt' },
 ];
 
+// Получаем список пользователей
 async function fetchUsers() {
   loading.value = true;
   try {
@@ -52,23 +55,18 @@ async function fetchUsers() {
   }
 }
 
-async function togglePromos(user: User) {
-  if (expanded.value.includes(user.idUser)) {
-    expanded.value = expanded.value.filter(id => id !== user.idUser);
-    return;
-  }
-  expanded.value.push(user.idUser);
-
-  if (!promosMap.value[user.idUser]) {
-    loadingPromos.value[user.idUser] = true;
-    try {
-      const promos = await getPromocodesByUser(user.idUser, 18);
-      promosMap.value[user.idUser] = promos;
-    } catch (e) {
-      console.error(e);
-    } finally {
-      loadingPromos.value[user.idUser] = false;
-    }
+// Открываем модалку с промокодами пользователя
+async function openPromosModal(user: User) {
+  selectedUser.value = user;
+  promoModal.value = true;
+  loadingPromos.value = true;
+  try {
+    const promos = await getPromocodesByUser(user.idUser, 18);
+    userPromos.value = promos;
+  } catch (e) {
+    console.error(e);
+  } finally {
+    loadingPromos.value = false;
   }
 }
 
@@ -105,33 +103,40 @@ fetchUsers();
         item-value="idUser"
         class="elevation-1"
         :loading="loading"
-        show-expand
-        :expanded.sync="expanded"
     >
-      <!-- Кнопка раскрытия -->
-      <template v-slot:item.data-table-expand="{ item }">
-        <v-btn icon @click.stop="togglePromos(item)">
-          <v-icon :icon="expanded.includes(item.idUser) ? mdiChevronUp : mdiChevronDown" />
+      <!-- Кнопка открытия модалки -->
+      <template v-slot:item.action="{ item }">
+        <v-btn small color="primary" @click="openPromosModal(item)">
+          Просмотреть промокоды
         </v-btn>
       </template>
+    </v-data-table>
 
-      <!-- Раскрытая таблица промокодов -->
-      <template v-slot:expanded-item="{ item }">
-        <v-card flat class="pa-2">
-          <div v-if="loadingPromos[item.idUser]">Загрузка промокодов...</div>
+    <!-- Модалка с промокодами -->
+    <v-dialog v-model="promoModal" max-width="800px">
+      <v-card>
+        <v-card-title>
+          Промокоды пользователя: {{ selectedUser?.user }}
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text>
+          <div v-if="loadingPromos">Загрузка промокодов...</div>
           <v-data-table
               v-else
               :headers="promoHeaders"
-              :items="promosMap[item.idUser]"
+              :items="userPromos"
               dense
               hide-default-footer
           />
-        </v-card>
-      </template>
-    </v-data-table>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="promoModal = false">Закрыть</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <style scoped>
-
 </style>
