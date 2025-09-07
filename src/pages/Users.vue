@@ -29,7 +29,7 @@ const headers = ref([
 const promoHeaders = [
     { title: 'ID', value: 'id' },
     { title: 'Название', value: 'name' },
-    { title: 'Описание', value: 'description' },
+    { title: 'Значение', value: 'description' },
     { title: 'Тип', value: 'promoCount' },
     { title: 'Статус', value: 'status' },
     { title: 'Токен', value: 'tokenHash' },
@@ -127,7 +127,13 @@ fetchUsers();
               :items="userPromos"
               dense
               hide-default-footer
-          />
+          >
+            <template v-slot:item.promoCount="{ item }">
+              <span>
+                {{ item.promoCount === 1 ? 'Проценты' : item.promoCount === 0 ? 'Сумма' : item.promoCount }}
+              </span>
+            </template>
+          </v-data-table>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
