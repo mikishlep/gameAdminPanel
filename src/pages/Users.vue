@@ -105,7 +105,7 @@ fetchUsers();
       <template v-slot:item.action="{ item }">
         <div class="action-cell">
           <v-btn small text color="primary" @click="openPromosModal(item)">
-            Просмотр
+            Промокоды
           </v-btn>
         </div>
       </template>
