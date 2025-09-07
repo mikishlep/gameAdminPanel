@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { mdiViewDashboard, mdiAccountGroup, mdiTicketPercent } from '@mdi/js';
+import { mdiViewDashboard, mdiAccountGroup } from '@mdi/js';
 
 const drawer = ref(true);
 </script>

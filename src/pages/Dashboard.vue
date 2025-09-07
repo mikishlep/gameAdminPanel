@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { mdiAccountGroup, mdiTrendingUp } from '@mdi/js';
-import { getUsers, type UsersFormData } from '@/api/users.ts';
+import { getUsers } from '@/api/users.ts';
 
 const stats = ref({
   totalUsers: 0

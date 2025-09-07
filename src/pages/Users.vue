@@ -87,15 +87,14 @@ async function handleUsePromocode(promo: Promocode) {
   try {
     const useData: UsePromocodeData = {
       token: promo.tokenHash,
-      user_id: selectedUser.value?.idUser,
+      user_id: selectedUser.value!.idUser,
       user_admin_id: 18
     };
 
     const result = await usePromocode(useData);
     promocodeSuccess.value = `Промокод успешно использован: ${result.name} (${result.description})`;
-    
-    // Refresh promocodes list
-    const promos = await getPromocodesByUser(selectedUser.value?.idUser, 18);
+
+    const promos = await getPromocodesByUser(selectedUser.value!.idUser, Number(localStorage.getItem("userId")));
     userPromos.value = promos;
   } catch (e) {
     console.error(e);
