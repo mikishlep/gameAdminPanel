@@ -13,23 +13,39 @@ export interface LoginFormData {
     passUser: string;
 }
 
+export interface UserData {
+    idUser: number;
+    user: string;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+}
+
+export interface TokenData {
+    access_token: string;
+    refresh_token: string;
+    expires_in: number | null;
+}
+
 export interface AuthResponse {
-    success: boolean;
-    message?: string;
+    userData: UserData;
+    tokenUser: TokenData;
 }
 
 // --------------------------------
 
 export async function register(formData: RegisterFormData): Promise<AuthResponse> {
-    return api.post<AuthResponse>("/auth/register", formData, {
+    const res = await api.post<AuthResponse>("/auth/register", formData, {
         params: { oauth_client: "my-admin_panel" },
         headers: { "Content-Type": "application/json" },
     });
+    return res.data;
 }
 
 export async function login(formData: LoginFormData): Promise<AuthResponse> {
-    return api.post<AuthResponse>("/auth/login", formData, {
+    const res = await api.post<AuthResponse>("/auth/login", formData, {
         params: { oauth_client: "my-admin_panel" },
         headers: { "Content-Type": "application/json" },
-    })
+    });
+    return res.data;
 }

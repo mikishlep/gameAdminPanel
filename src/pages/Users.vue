@@ -1,25 +1,51 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
+import { getUsers, type UsersFormData } from "@/api/users.ts";
 
 interface User {
-  id: number;
-  name: string;
+  idUser: number;
+  user: string;
   email: string;
+  firstName: string;
+  lastName: string;
 }
 
 const search = ref('');
-const users = ref<User[]>([
-  { id: 1, name: 'Иван Иванов', email: 'ivan@example.com' },
-  { id: 2, name: 'Пётр Петров', email: 'petr@example.com' },
-  { id: 3, name: 'Сергей Сергеев', email: 'sergey@example.com' },
-]);
+const users = ref<User[]>([]);
+const loading = ref(false);
 
 const headers = ref([
-  { title: 'ID', key: 'id' },
-  { title: 'Имя', key: 'name' },
-  { title: 'Email', key: 'email' },
+    { title: 'ID', key: 'id' },
+    { title: 'Юзернейм', key: 'username' },
+    { title: 'Имя', key: 'firstName' },
+    { title: 'Фамилия', key: 'lastName' },
+    { title: 'Email', key: 'email' },
 ]);
+
+onMounted(async () => {
+  loading.value = true;
+
+  try {
+    const formData: UsersFormData = {
+      id_user: localStorage.getItem("userId"),
+      offset: 0,
+      limit: 10,
+    }
+
+    const res = await getUsers(formData);
+
+    if (res.success && Array.isArray((res as any).data)) {
+      users.value = (res as any).data;
+    } else {
+      console.warn("Ошибка при получении пользователей:", res.message);
+    }
+  } catch (e) {
+    console.log(`Ошибка при получении пользователей: ${e}`);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
