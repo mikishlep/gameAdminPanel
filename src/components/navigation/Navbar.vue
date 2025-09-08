@@ -6,7 +6,7 @@ const drawer = ref(true);
 </script>
 
 <template>
-  <v-app>
+  <div>
     <v-app-bar app color="primary" dark>
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-toolbar-title class="font-weight-bold">Главпанель</v-toolbar-title>
@@ -21,10 +21,10 @@ const drawer = ref(true);
 
     <v-main>
       <v-container fluid>
-        <router-view />
+        <slot />
       </v-container>
     </v-main>
-  </v-app>
+  </div>
 </template>
 
 <style scoped>
