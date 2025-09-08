@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
 import { getUsers, type UsersFormData, type User, type UsersResponse } from "@/api/users.ts";
 import { getPromocodesByUser, usePromocode, type Promocode, type UsePromocodeData } from "@/api/promocodes.ts";
@@ -17,7 +17,6 @@ const selectedUser = ref<User | null>(null);
 const userPromos = ref<Promocode[]>([]);
 const loadingPromos = ref(false);
 
-// Promocode usage functionality
 const promocodeToken = ref('');
 const usingPromocode = ref(false);
 const promocodeError = ref('');
@@ -43,6 +42,18 @@ const promoHeaders = [
   { title: 'Действия', value: 'action', sortable: false, align: 'end' },
 ];
 
+const filteredUsers = computed(() => {
+  if (!search.value) return users.value;
+  const s = search.value.toLowerCase();
+  return users.value.filter((item) => {
+    return headers.value.some((header) => {
+      if (header.value === 'action') return false;
+      const value = item[header.value as keyof User];
+      return value != null && value.toString().toLowerCase().includes(s);
+    });
+  });
+});
+
 async function fetchUsers() {
   loading.value = true;
   try {
@@ -56,6 +67,8 @@ async function fetchUsers() {
     totalItems.value = res.total;
   } catch (e) {
     console.error(e);
+    users.value = [];
+    totalItems.value = 0;
   } finally {
     loading.value = false;
   }
@@ -65,12 +78,12 @@ async function openPromosModal(user: User) {
   selectedUser.value = user;
   promoModal.value = true;
   loadingPromos.value = true;
-  // Reset promocode form
+
   promocodeToken.value = '';
   promocodeError.value = '';
   promocodeSuccess.value = '';
   try {
-    const promos = await getPromocodesByUser(user.idUser, 18);
+    const promos = await getPromocodesByUser(user.idUser, Number(localStorage.getItem("userId")));
     userPromos.value = promos;
   } catch (e) {
     console.error(e);
@@ -88,7 +101,7 @@ async function handleUsePromocode(promo: Promocode) {
     const useData: UsePromocodeData = {
       token: promo.tokenHash,
       user_id: selectedUser.value!.idUser,
-      user_admin_id: 18
+      user_admin_id: Number(localStorage.getItem("userId")),
     };
 
     const result = await usePromocode(useData);
@@ -104,7 +117,11 @@ async function handleUsePromocode(promo: Promocode) {
   }
 }
 
-// Watchers для отслеживания изменений пагинации
+function onUpdateOptions(options: { page: number; itemsPerPage: number }) {
+  page.value = options.page;
+  itemsPerPage.value = options.itemsPerPage;
+}
+
 watch([page, itemsPerPage], () => {
   fetchUsers();
 });
@@ -132,16 +149,16 @@ fetchUsers();
 
     <v-divider></v-divider>
 
-    <v-data-table
+    <v-data-table-server
         :headers="headers"
-        :items="users"
-        :search="search"
-        v-model:items-per-page="itemsPerPage"
-        v-model:page="page"
+        :items="filteredUsers"
         :items-length="totalItems"
+        :items-per-page="itemsPerPage"
+        :page="page"
+        :loading="loading"
         item-value="idUser"
         class="elevation-1"
-        :loading="loading"
+        @update:options="onUpdateOptions"
     >
       <template v-slot:item.action="{ item }">
         <div class="action-cell">
@@ -150,7 +167,7 @@ fetchUsers();
           </v-btn>
         </div>
       </template>
-    </v-data-table>
+    </v-data-table-server>
 
     <v-dialog v-model="promoModal" max-width="1200px">
       <v-card>
@@ -174,20 +191,20 @@ fetchUsers();
               </template>
               <template v-slot:item.action="{ item }">
                 <div class="action-cell">
-                  <v-btn 
-                    small 
-                    text 
-                    color="primary" 
-                    @click="handleUsePromocode(item)"
-                    :loading="usingPromocode"
-                    :disabled="usingPromocode"
+                  <v-btn
+                      small
+                      text
+                      color="primary"
+                      @click="handleUsePromocode(item)"
+                      :loading="usingPromocode"
+                      :disabled="usingPromocode"
                   >
                     Применить
                   </v-btn>
                 </div>
               </template>
             </v-data-table>
-            
+
             <div v-if="promocodeError" class="text-error mt-3">
               {{ promocodeError }}
             </div>

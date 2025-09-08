@@ -12,11 +12,10 @@ const loading = ref(true);
 async function fetchStatistics() {
   loading.value = true;
   try {
-    // Получаем общее количество пользователей
     const usersData = await getUsers({
       id_user: Number(localStorage.getItem("userId")),
       offset: 0,
-      limit: 1000
+      limit: 10000
     });
     
     stats.value.totalUsers = usersData.total;
