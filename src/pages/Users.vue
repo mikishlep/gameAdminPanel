@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { mdiAccountGroup, mdiMagnify } from "@mdi/js";
 import { getUsers, type UsersFormData, type User, type UsersResponse } from "@/api/users.ts";
 import { getPromocodesByUser, usePromocode, type Promocode, type UsePromocodeData } from "@/api/promocodes.ts";
@@ -104,6 +104,11 @@ async function handleUsePromocode(promo: Promocode) {
   }
 }
 
+// Watchers для отслеживания изменений пагинации
+watch([page, itemsPerPage], () => {
+  fetchUsers();
+});
+
 fetchUsers();
 </script>
 
@@ -131,9 +136,9 @@ fetchUsers();
         :headers="headers"
         :items="users"
         :search="search"
-        :items-per-page="itemsPerPage"
-        :page.sync="page"
-        :server-items-length="totalItems"
+        v-model:items-per-page="itemsPerPage"
+        v-model:page="page"
+        :items-length="totalItems"
         item-value="idUser"
         class="elevation-1"
         :loading="loading"
