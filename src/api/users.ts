@@ -28,7 +28,7 @@ export interface UsersResponse {
 export async function getUsers(formData: UsersFormData): Promise<UsersResponse> {
     return api.post<UsersResponse>("/auth/get_users", null, {
         params: {
-            oauth_client: "telegram-app",
+            oauth_client: "my-admin_panel",
             id_user: formData.id_user,
             offset: formData.offset,
             limit: formData.limit,
