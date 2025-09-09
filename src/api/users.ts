@@ -1,4 +1,4 @@
-import { api } from "./apiClient.ts";
+import { api } from "../../../../analyzeBot/src/api/apiClient.ts";
 
 // oauth_client - telegram-app (получаем юзеров из тг)
 

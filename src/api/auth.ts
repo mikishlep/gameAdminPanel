@@ -1,4 +1,4 @@
-import { api } from "./apiClient.ts";
+import { api } from "../../../../analyzeBot/src/api/apiClient.ts";
 
 export interface RegisterFormData {
     userName: string;
